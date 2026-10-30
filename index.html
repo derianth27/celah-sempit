@@ -4,8 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
-<title>Kalender Celah Sempit</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' shape-rendering='crispEdges'%3E%3Crect width='16' height='16' rx='3' fill='%2315191c'/%3E%3Crect x='7' y='2' width='2' height='12' fill='%23d9dde0'/%3E%3Crect x='7' y='6' width='2' height='4' fill='%23ffffff'/%3E%3Crect x='11' y='2' width='3' height='3' fill='%23c42b23'/%3E%3C/svg%3E">
+<title>Celah Sempit App</title>
+<link rel="icon" type="image/png" sizes="64x64" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAA/0lEQVR42u3bsQrCMBDG8dxRcBccBEFw8CnyEj6pL5Gn6CAIhQ4FdyedBBGbJg5q7/63ppDeL0cohU9CQa3Wm1uYYQ19J1PPiMXGayDEcuMlEOql+bHe1EvzYz2qp+bf9arBeam303+dgubbG6eUsusxxuz6cbmo2u9wueYnwOPpP08BdwAAAAAAAAAAAACA12rm9sJT3/ZMAAAA/PcdsN9tmQAAAAAAAAAAAAAAAAAAAAAAAHD2P6A9nZkAAAAAAAAAAAAAAAAAAAAAAH4NUBIts1pD34mE4DMw8QDQ0oCh1Qgdd0BNzNRigFJrs7bW0qP6SeDYUnSW8HRwHp+/A0kiS7vdQz16AAAAAElFTkSuQmCC">
+<link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAYAAABS3GwHAAACvUlEQVR42u3dP0oDQRjG4Z0hYC+kCAQEC0+RS3hSL5FTWAhCIEXA3ip2YqPmzyabmfd5DqCwfL/9ZqJiGSY0Xyz3A/F2202Z6nsXw05yFMXQkxxDMfgkh1AMPskhFINPcgjV8NOqMWavGn6SIygGn+QjUTX8JG+DavhJjqAafpIjqIaf5Aiq4Sc5guoxkax6+5O8BarhJzmCavhJjsAdAHcAb39St4ANgA3g7U/qFrABsAG8/UndAjOPY1zr9fqiX3+1Wl3067/c393U83z++JzuJ8EQcQRy/CH1GGQDYAOAAEAAEBaACzDJF2EbAEcgEAAIAAQAAgABgABAACAAEAAIAAQAAgABgABAACAAEAAIAAQAAgABgABAACAAEAAIAKbhf4QxXPN/ctkAIAAQAAgABAACAAGAAEAAIAAQAAx+F6gRT48PHoINAAIAAYAAQAAgABAACAAEAAIAAYAAQAAgABAACAAEAAIAAYAAQAAgABAACAAEAAIAAYAAQAAgABAACAAEAAIAASAAEAAIAAQAAgABgABAACAAEAAIAAQA7Zt5BON6fXv3EGwAEAAIAAQAAgABgABAACAAEAAIAAQAAgABgABAACAAEAAIAAQAAgABgABAACAAEAAIAAQAAgABgABAACAAEAAIAAGAAEAAIAAQAGQEsNtuisdAot12U2wAHIFAACAACAzARZjEC7ANQLzvN/98sdx7HMRuAMcg0obfEQiX4N/KgN7f/jYANsB/hUCvb38bABvg0FKgt7f/nxtABPQ+/P8egURAz8PvDoA7wLkFQatv/4M3gAjocfiPOgKJgN6G/+g7gAjoafhPugSLgF6Gfxh+/D3AKfwNAa0O/igfg9oGtDz8o/wcQAS0OvxnH4EciWh18C8SgBBoZfAvGoAQuPXBv0oAYuDW75aTXmBFwdQfpHwBwje8syyEzCsAAAAASUVORK5CYII=">
 <meta name="theme-color" content="#15191c">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1209,7 +1210,7 @@ function showGate(mode) {
   document.getElementById("gateTitle").textContent = setup ? "Buat akun admin" : "Masuk admin";
   document.getElementById("gateNote").textContent = setup
     ? "Belum ada admin. Isi kode setup dari editor Apps Script (jalankan setupAdmin), lalu pilih username dan password."
-    : "Hanya admin Celah Sempit yang bisa membuka kalender ini.";
+    : "Hanya admin Celah Sempit yang bisa membuka aplikasi ini.";
   document.getElementById("codeWrap").hidden = !setup;
   gateForm.elements.code.required = setup;
   gateForm.elements.pass.autocomplete = setup ? "new-password" : "current-password";
