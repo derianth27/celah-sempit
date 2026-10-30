@@ -1,0 +1,1248 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Kalender Celah Sempit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Cormorant+Garamond:ital,wght@1,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root {
+  --bg: #f1f2f0; --surface: #ffffff; --surface-2: #f6f7f5; --ink: #15191c; --ink-2: #434c53; --muted: #69737a;
+  --line: #dde1e2; --line-2: #c8ced1;
+  --rec: #c42b23; --rec-bg: #fbeae8; --phos: #1f6f5c; --phos-bg: #e2f1eb;
+  /* seri chart: palet dataviz tervalidasi, urutan tetap IG, TikTok, FB, YT */
+  --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100;
+  --gold: #8a6a22; --on-gold: #ffffff; --prod: #6b5aa6; --prod-bg: #eeebf7;
+  --f-display: "Cinzel", Georgia, serif;
+  --f-italic: "Cormorant Garamond", Georgia, serif;
+  --f-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  --r: 12px; --r-sm: 8px;
+  --shadow: 0 1px 2px rgba(16,20,24,.05), 0 4px 14px rgba(16,20,24,.04);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #2a2e33; --surface: #33383e; --surface-2: #3b4147; --ink: #eef1f3; --ink-2: #c8cfd4; --muted: #a0a9b0;
+    --line: #454c53; --line-2: #556068;
+    --rec: #ff5a4e; --rec-bg: #50302c; --phos: #6fc3ae; --phos-bg: #2e4b44;
+    --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500;
+    --gold: #d6b25e; --on-gold: #1d1a12; --prod: #a99be0; --prod-bg: #403a57;
+    --shadow: 0 1px 2px rgba(0,0,0,.18), 0 4px 14px rgba(0,0,0,.12);
+    color-scheme: dark;
+  }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--bg); color: var(--ink);
+  font-family: var(--f-body); font-size: 15px; line-height: 1.55;
+  -webkit-text-size-adjust: 100%;
+}
+[hidden] { display: none !important; }
+.wrap { max-width: 1120px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.num { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+
+/* Header */
+.top { position: sticky; top: 0; z-index: 5; background: var(--bg); border-bottom: 1px solid var(--line); }
+.top-in { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: max(10px, env(safe-area-inset-top, 0px)); padding-bottom: 10px; }
+.brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.brand-mark { width: 40px; height: 40px; border-radius: 10px; flex: 0 0 auto; display: block; background: #081209; }
+h1 { font-family: var(--f-display); font-weight: 700; font-size: 17px; letter-spacing: .06em; margin: 0; line-height: 1.15; text-transform: uppercase; color: var(--gold); }
+.sub { margin: 0; font-family: var(--f-mono); font-size: 11px; color: var(--muted); letter-spacing: .04em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sub .rec { color: var(--rec); }
+.sub .rec::before { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--rec); margin-right: 5px; vertical-align: 1px; animation: blink 1.6s steps(2, start) infinite; }
+@keyframes blink { to { visibility: hidden; } }
+.tabs { display: inline-flex; background: var(--surface-2); border: 1px solid var(--line); border-radius: 10px; padding: 3px; gap: 2px; flex: 0 0 auto; }
+.tabs button { border: 0; background: transparent; min-height: 36px; padding: 6px 14px; border-radius: 7px; color: var(--muted); font-weight: 600; }
+.tabs button[aria-selected="true"] { background: var(--ink); color: var(--bg); box-shadow: var(--shadow); }
+
+main { padding-top: 20px; padding-bottom: max(56px, env(safe-area-inset-bottom, 0px)); }
+
+/* Controls */
+button {
+  font: 500 13px/1.2 var(--f-body); color: var(--ink); background: var(--surface);
+  border: 1px solid var(--line-2); border-radius: var(--r-sm); padding: 9px 12px; cursor: pointer;
+  -webkit-tap-highlight-color: transparent; min-height: 40px; transition: background .15s, border-color .15s, color .15s;
+}
+button:hover { border-color: var(--ink-2); }
+button:active { transform: translateY(1px); }
+button:focus-visible, summary:focus-visible, input:focus-visible, textarea:focus-visible, .cell:focus-visible, .col:focus-visible { outline: 2px solid var(--phos); outline-offset: 2px; }
+button.ok { color: var(--phos); border-color: var(--phos); background: var(--phos-bg); }
+button.primary { background: var(--gold); color: var(--on-gold); border-color: var(--gold); }
+button.ghost { background: transparent; border-color: transparent; color: var(--ink-2); }
+button.ghost:hover { background: var(--surface-2); }
+button.sm { min-height: 32px; padding: 6px 10px; font-size: 12px; }
+button:disabled { opacity: .55; cursor: default; }
+.seg { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+.seg::-webkit-scrollbar { display: none; }
+.seg button { flex: 0 0 auto; border-radius: 999px; min-height: 36px; padding: 7px 14px; }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+
+/* Panels */
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 16px; box-shadow: var(--shadow); min-width: 0; }
+.panel > h3, .ph h3 { margin: 0; font-size: 14px; font-weight: 600; }
+.ph { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+.ph p, .hint { margin: 0; font-size: 12.5px; color: var(--muted); }
+.eyebrow { font-family: var(--f-mono); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+
+/* Calendar layout */
+.cal { display: grid; gap: 20px; }
+.side { display: grid; gap: 14px; align-content: start; }
+.feed { display: grid; gap: 16px; min-width: 0; }
+.stat-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-bottom: 12px; }
+.stat b { display: block; font-family: var(--f-mono); font-size: 22px; font-weight: 500; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.stat b small { font-size: 13px; color: var(--muted); }
+.bar { height: 6px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 999px; overflow: hidden; margin-top: 6px; }
+.bar.r i { background: var(--prod); } .bar.j i { background: var(--gold); }
+.bar i { display: block; height: 100%; width: 0; background: var(--phos); border-radius: 999px; transition: width .3s; }
+.month { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 4px; }
+.month .dow { font-family: var(--f-mono); font-size: 10px; color: var(--muted); text-align: center; padding: 2px 0; }
+.cell { min-height: 38px; padding: 0; border-radius: 7px; border: 1px solid var(--line); background: var(--surface-2); font: 500 12px/1 var(--f-mono); display: grid; place-items: center; position: relative; color: var(--ink-2); }
+.cell.none { opacity: .3; border-style: dashed; background: transparent; }
+.cell.prod { color: var(--prod); }
+.cell.ready { border-color: var(--phos); }
+.cell.posted { background: var(--phos-bg); border-color: transparent; color: var(--phos); }
+.cell.today { border-color: var(--rec); box-shadow: inset 0 0 0 1px var(--rec); color: var(--rec); }
+.cell .dot { position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%); width: 4px; height: 4px; border-radius: 50%; background: currentColor; }
+.cell.mj::after { content: ""; position: absolute; top: 4px; right: 4px; width: 5px; height: 5px; border-radius: 50%; background: var(--rec); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 10px; font-size: 11.5px; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+.rules { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 14px; margin: 0; }
+.rules dt { font-family: var(--f-mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.rules dd { margin: 2px 0 0; font-size: 13px; line-height: 1.4; }
+
+.batch { display: grid; gap: 12px; }
+.batch-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; padding: 4px 2px 0; }
+.batch-head h2 { margin: 0; font-family: var(--f-display); font-weight: 700; font-size: 15px; letter-spacing: .08em; text-transform: uppercase; }
+.batch-head span { font-family: var(--f-mono); font-size: 11px; color: var(--muted); }
+
+/* Day card */
+.day { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); scroll-margin-top: 84px; box-shadow: var(--shadow); }
+.day > summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; align-items: center; gap: 4px 12px; padding: 11px 14px; border-radius: var(--r); }
+.day > summary::-webkit-details-marker { display: none; }
+.day > summary:hover { background: var(--surface-2); }
+.day > summary::after { content: ""; width: 7px; height: 7px; border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted); transform: rotate(45deg); margin: 0 4px 4px; transition: transform .15s; }
+.day[open] > summary::after { transform: rotate(-135deg); margin: 4px 4px 0; }
+.day[open] > summary { border-bottom: 1px solid var(--line); border-radius: var(--r) var(--r) 0 0; }
+.day .body { display: grid; gap: 12px; padding: 14px 16px 16px; }
+.sum-d { font: 500 12px/1.2 var(--f-mono); color: var(--muted); white-space: nowrap; min-width: 92px; font-variant-numeric: tabular-nums; }
+.sum-t { min-width: 0; display: flex; align-items: baseline; gap: 4px 10px; flex-wrap: wrap; }
+.sum-t b { font-family: var(--f-display); font-weight: 700; letter-spacing: .04em; font-size: 15px; line-height: 1.25; }
+.sum-t small { font-size: 12.5px; color: var(--muted); }
+.day .badge { margin-left: 0; }
+.day.today { border-color: var(--rec); box-shadow: 0 0 0 1px var(--rec), var(--shadow); }
+.day.posted { background: var(--surface-2); box-shadow: none; }
+.day.posted .cap { color: var(--ink-2); }
+.head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.n { font-family: var(--f-mono); font-weight: 500; font-size: 12px; padding: 4px 7px; border-radius: 6px; background: var(--ink); color: var(--bg); letter-spacing: .04em; }
+.d { font-family: var(--f-mono); font-size: 12px; color: var(--muted); }
+.badge { margin-left: auto; font-family: var(--f-mono); font-size: 11px; padding: 3px 8px; border-radius: 999px; border: 1px solid var(--line-2); color: var(--muted); white-space: nowrap; }
+.badge.on { border-color: transparent; background: var(--phos-bg); color: var(--phos); }
+.badge.live { border-color: transparent; background: var(--rec-bg); color: var(--rec); }
+.meta { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { font-family: var(--f-mono); font-size: 11px; padding: 3px 8px; border-radius: 6px; background: var(--surface-2); border: 1px solid var(--line); color: var(--ink-2); }
+.chip.mj { border-color: var(--rec); color: var(--rec); background: transparent; }
+.chip.rv { border: 1px dashed var(--phos); color: var(--phos); background: transparent; }
+.title { display: grid; }
+.title b { font-family: var(--f-display); font-weight: 700; font-size: 20px; letter-spacing: .05em; line-height: 1.2; }
+.title i { font-family: var(--f-italic); font-size: 18px; color: var(--muted); }
+.file { font-family: var(--f-mono); font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
+.deadline { font-size: 13px; color: var(--prod); }
+.chip.ready { border-color: var(--phos); color: var(--phos); background: transparent; }
+.chip.prod { border-color: var(--prod); color: var(--prod); background: var(--prod-bg); }
+.badge.late { border-color: var(--rec); color: var(--rec); }
+.aired { display: grid; gap: 8px; }
+.aired-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 10px; border: 1px solid var(--line); border-radius: var(--r-sm); background: var(--surface-2); }
+.aired-row b { font-family: var(--f-display); font-weight: 700; letter-spacing: .05em; font-size: 14px; }
+.aired-row small { display: block; font-family: var(--f-mono); font-size: 11px; color: var(--phos); }
+.cap { margin: 0; white-space: pre-wrap; }
+.tags { font-family: var(--f-mono); font-size: 12.5px; color: var(--phos); overflow-wrap: anywhere; }
+.yt { font-size: 14px; color: var(--ink-2); }
+.yt b { font-family: var(--f-mono); font-size: 10.5px; font-weight: 500; color: var(--bg); background: var(--rec); padding: 2px 5px; border-radius: 4px; margin-right: 8px; vertical-align: 1px; }
+.actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; border-top: 1px solid var(--line); padding-top: 10px; }
+.checks { display: flex; flex-wrap: wrap; gap: 4px 18px; font-size: 14px; }
+.checks label { display: inline-flex; gap: 8px; align-items: center; min-height: 36px; cursor: pointer; }
+.checks input { width: 20px; height: 20px; accent-color: var(--phos); }
+.audit-mini { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--ink-2); }
+.body details { border-top: 1px dashed var(--line); padding-top: 8px; }
+.body summary, .rules-d > summary, .hist-d > summary { cursor: pointer; font-family: var(--f-mono); font-size: 12px; color: var(--muted); padding: 4px 0; }
+.rules-d > summary { font-family: var(--f-body); font-size: 13px; font-weight: 600; color: var(--ink); }
+.rules-d[open] > summary { margin-bottom: 10px; }
+.hist-d { border: 1px solid var(--line); border-radius: var(--r-sm); padding: 6px 12px; }
+.hist-d .li { font-size: 13px; padding: 6px 0; }
+.body details p { margin: 6px 0 0; font-size: 14px; }
+.prompt { margin: 8px 0; font-family: var(--f-mono); font-size: 12.5px; line-height: 1.55; white-space: pre-wrap; overflow-wrap: anywhere; background: var(--bg); border: 1px solid var(--line); border-radius: var(--r-sm); padding: 10px; max-height: 340px; overflow-y: auto; -webkit-user-select: text; user-select: text; }
+.empty { padding: 28px 16px; text-align: center; color: var(--muted); font-size: 14px; border: 1px dashed var(--line-2); border-radius: var(--r); }
+footer { color: var(--muted); font-size: 13px; }
+
+/* Audit */
+.audit { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+.audit-top { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+.audit-top h2 { margin: 0; font-family: var(--f-display); font-weight: 700; font-size: 20px; letter-spacing: .06em; text-transform: uppercase; }
+.audit-top p { margin: 2px 0 0; color: var(--muted); font-size: 13.5px; }
+.audit-bar { display: flex; gap: 8px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+.kpis { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.kpi { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 14px; box-shadow: var(--shadow); min-width: 0; }
+.kpi b { display: block; font-family: var(--f-mono); font-weight: 500; font-size: 24px; line-height: 1.15; margin-top: 4px; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.kpi span { font-size: 12px; color: var(--muted); }
+.grid2 { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+
+.chart { position: relative; height: 200px; margin: 4px 0 0 34px; }
+.chart .grid { position: absolute; left: 0; right: 0; border-top: 1px solid var(--line); }
+.chart .grid span { position: absolute; right: 100%; transform: translateY(-50%); padding-right: 6px; font: 10.5px/1 var(--f-mono); color: var(--muted); white-space: nowrap; }
+.cols { position: absolute; inset: 0; display: flex; align-items: flex-end; gap: 2px; }
+.col { flex: 1 1 0; min-width: 0; height: 100%; display: flex; flex-direction: column-reverse; gap: 2px; cursor: default; border-radius: 4px 4px 0 0; }
+.col:hover, .col:focus-visible { background: var(--surface-2); }
+.col .seg-v { width: 100%; }
+.col .seg-v:last-child { border-radius: 4px 4px 0 0; }
+.col.na::after { content: ""; display: block; height: 2px; width: 100%; background: var(--line-2); }
+.xaxis { display: flex; gap: 2px; margin: 6px 0 0 34px; }
+.xaxis span { flex: 1 1 0; min-width: 0; text-align: center; font: 10px/1 var(--f-mono); color: var(--muted); }
+.series-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; color: var(--ink-2); }
+.series-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.series-legend i { width: 10px; height: 10px; border-radius: 3px; }
+
+.hbars { display: grid; gap: 10px; }
+.hbar { display: grid; grid-template-columns: 96px 1fr auto; align-items: center; gap: 10px; font-size: 13px; }
+.hbar .lab { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink-2); }
+.hbar .track { height: 14px; }
+.hbar .track i { display: block; height: 100%; min-width: 2px; background: var(--s1); border-radius: 0 4px 4px 0; }
+.hbar .val { font: 12px/1 var(--f-mono); color: var(--ink); white-space: nowrap; }
+.hbar .val small { color: var(--muted); }
+
+.scroll { overflow-x: auto; margin: 0 -16px; padding: 0 16px; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { text-align: left; font: 500 10.5px/1.2 var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); padding: 8px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+td { padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: middle; white-space: nowrap; }
+tr:last-child td { border-bottom: 0; }
+td.r, th.r { text-align: right; font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+td .sw { display: inline-block; width: 9px; height: 9px; border-radius: 3px; margin-right: 8px; vertical-align: 0; }
+.muted { color: var(--muted); }
+
+.rank { display: grid; gap: 8px; }
+.rank h4 { margin: 4px 0 0; font: 500 10.5px/1.2 var(--f-mono); letter-spacing: .1em; text-transform: uppercase; }
+.rank h4.win { color: var(--phos); }
+.rank h4.lose { color: var(--rec); }
+.ritem { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--r-sm); background: var(--surface-2); }
+.ritem .t { min-width: 0; }
+.ritem .t b { display: block; font-weight: 600; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ritem .t small { color: var(--muted); font-size: 12px; }
+.ritem .v { text-align: right; font-family: var(--f-mono); font-size: 13px; }
+.ritem .v small { display: block; color: var(--muted); font-size: 11px; }
+.list { display: grid; gap: 8px; }
+.li { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 13.5px; }
+.li:last-child { border-bottom: 0; }
+.li .x { font-family: var(--f-mono); color: var(--phos); white-space: nowrap; }
+
+/* Dialog */
+dialog { border: 1px solid var(--line); border-radius: 14px; padding: 0; background: var(--surface); color: var(--ink); width: min(640px, calc(100vw - 24px)); max-height: calc(100dvh - 24px); box-shadow: 0 20px 60px rgba(0,0,0,.25); }
+dialog::backdrop { background: rgba(8,10,12,.55); }
+dialog form { display: grid; gap: 14px; padding: 18px; }
+.dh { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.dh h3 { margin: 0; font-size: 16px; }
+.dh p { margin: 2px 0 0; font-size: 12.5px; color: var(--muted); }
+fieldset { border: 1px solid var(--line); border-radius: var(--r-sm); padding: 10px 12px 12px; margin: 0; min-width: 0; }
+legend { font-size: 13px; font-weight: 600; padding: 0 4px; display: inline-flex; align-items: center; gap: 6px; }
+legend i { width: 9px; height: 9px; border-radius: 3px; display: inline-block; }
+.fields { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+.fields label, .flabel { display: grid; gap: 4px; font-size: 11px; color: var(--muted); min-width: 0; }
+.gate { padding-top: 48px; padding-bottom: 48px; }
+.gate form { max-width: 380px; margin: 0 auto; display: grid; gap: 14px; }
+.gate h2 { margin: 0; font-family: var(--f-display); font-size: 20px; letter-spacing: .06em; text-transform: uppercase; }
+.gate p { margin: 0; font-size: 13.5px; color: var(--muted); }
+.gate .gate-err { color: var(--rec); min-height: 1em; }
+.gate input { width: 100%; font: 16px/1.3 var(--f-body); color: var(--ink); background: var(--surface-2); border: 1px solid var(--line-2); border-radius: 7px; padding: 9px 10px; min-height: 44px; }
+input[type=number], input[type=url], input[type=date], textarea { width: 100%; font: 14px/1.3 var(--f-mono); color: var(--ink); background: var(--surface-2); border: 1px solid var(--line-2); border-radius: 7px; padding: 8px; min-height: 40px; }
+textarea { font-family: var(--f-body); resize: vertical; min-height: 72px; }
+.dfoot { display: flex; justify-content: flex-end; gap: 8px; position: sticky; bottom: 0; background: var(--surface); padding-top: 4px; }
+
+.tip { position: fixed; z-index: 20; pointer-events: none; background: var(--ink); color: var(--bg); border-radius: 8px; padding: 9px 11px; font-size: 12px; line-height: 1.45; box-shadow: 0 8px 24px rgba(0,0,0,.25); max-width: 240px; }
+.tip b { display: block; font-size: 12.5px; margin-bottom: 4px; }
+.tip .row { display: flex; justify-content: space-between; gap: 14px; font-family: var(--f-mono); }
+.tip .row i { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 6px; }
+.toast { position: fixed; left: 50%; bottom: max(20px, env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--ink); color: var(--bg); font-size: 13px; padding: 10px 16px; border-radius: 999px; z-index: 30; box-shadow: 0 8px 24px rgba(0,0,0,.2); }
+
+@media (max-width: 560px) {
+  .day > summary { grid-template-columns: minmax(0, 1fr) auto auto; }
+  .sum-d { grid-column: 1 / -1; }
+}
+@media (max-width: 420px) {
+  .fields { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .sub { display: none; }
+}
+@media (min-width: 560px) {
+  .actions { grid-template-columns: repeat(4, 1fr); }
+  .kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (min-width: 900px) {
+  .cal { grid-template-columns: 300px minmax(0, 1fr); align-items: start; }
+  .side { position: sticky; top: 76px; max-height: calc(100vh - 92px); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; padding: 2px 4px 2px 2px; }
+  .kpis { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .grid2 { grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); }
+  .grid2.even { grid-template-columns: 1fr 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bar i, button { transition: none; }
+  .sub .rec::before { animation: none; }
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap top-in">
+    <div class="brand">
+      <img class="brand-mark" alt="" width="40" height="40" src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAQDAwMDAgQDAwMEBAQFBgoGBgUFBgwICQcKDgwPDg4MDQ0PERYTDxAVEQ0NExoTFRcYGRkZDxIbHRsYHRYYGRj/2wBDAQQEBAYFBgsGBgsYEA0QGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBj/wAARCABgAGADASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD4booorE5wo9qKMc4FAB3oqxBZyzsAik11/hr4Y+MPFr7fDfhjVtXwcE2Vq8qg+7AYH51E6kYfEy405S2OI70V7Y/7MPxlS381/hzrgGM4EaFv++Q2a8+8ReA/EPhm8NprejX+m3A/5ZXkDwsfoGAz+FRHEU5OykU6MkrnKUU+SNo32sMGmVsZBiiiigAooooAPar2nWD3dwqKCcmqQGXAr6X/AGTfAFp4l+KI1jU7dZrHRYheFHGVeYtiIH1AOWx/sCufFV1RpubNqFL2k1E9c+CP7MHh/RPDsXjL4qWySTCI3KaTcHbDbRgbt9x/ebHOzoO+TwPLfi7+1F4p1fVpNG8B38/hbwvbExW1tpoFvJMg4Duy4K56hFwAMZya+mf2i/ELaV8ANViW7W3bUJI7JpXfaAjNufJPqFI/Gvzq1XS1lvHK3tu7kb9qyqTgjOevTHOa8fAf7TJ1a2vY9LEx9lFRpnufwT/aK8ZeHvHdhHrPiTUdT0SedY7y0v52nARiAXQuSVZc54ODjB6197eKvD/hzxn4dn0LxRplvqdhKCNkq5Kf7cbdUYdQRivyCgabTL35wRg4PavqvQv20tb0zwHb6bfeGbLUdWt4BCl/JcsiSbRhWkjA5bAGcMAfbNVj8DNyU6CJw2Iik41GfP3xY8Ir4J+KOu+GFn88adeSW6y9C6g5Un3KkZ964Ot/xZ4kv/FPia+1zVJzPe3s73E8hGNzsck47D0HYVgYr2qKkoJS3PNqtOTsFFFFaGYUUUUAPiH75frX3B+yH5Vt4C8QXAx5kl5ChPsIyR+rGvh1DtkBr6t/ZX8TxwT6xoEkoVriJLqIZ6smVYD/AICwP4V5ebxbw7sehlzSqq51/wC2vLPc/ALS/KOY01yIycZ6wygfrXxBdeHvE+k217Pd6VqNpDazJbXTvEyrG5+ZUY9M8Aj8Pav0m8ZxWWp+GPNvrdrlNOuI9TWJEEjMYSWICnqdpbivCvGnj/4Vat8Mbzw/4eu7yS6l0x9KtWubeeOOJHKHfI0oAYjy0wTluMDrXnZbmEqdONKML66vtf8Ar+rHq18D7VyqX2R8yvMt94ct7xkcScoxYfeI6kHJz9TWVkjjNdFr8aWEcenQEmKFdinHaucwTzX0VN3Vz5+r8Vg70tGCKKsyCjtRiigAooooAK6zwP4pvPDHia01Wyl2TW8gdc9G9QfYjIP1rk6VWKNkdamcFOLi9i4TcHdH394X8b6b4r0OPU9NmAOB5sBPzwt6H+h6GvKfHHwq1ebxDFc+B9OF8t/dor6dEAGiLthtoJAKnP1H0r5+8OeMdV8P36Xen3stvMvAdGxx6H1Hsa+gfhP8c7/Ufip4W0vUrS1le51W2hM6ZjI3SKM45B/SvmamXV8NPno6xPqsuzx0dYuzf3M8K1Lw3fiygiuLadLhdyPG6EMrB2BGPbGK1fDvwn1rVIX1DUlGiaPAN9xqV+pRUTvsU8u3oBxnvXp2v/tAtDql9HaaLAZkuJVEk07MOHIzgAfzryLxh8SvEPi24U6pfF4o23JbxDZEp9dvc+5ya9KjUxdT3eVRXe9/uPHrLDqXNe/lsUNa0PTbnXbxvDMN9/Zqt+5Fx88oQADc5AwMnJx2zjtXM3Fu9tKUeu78L+N10KyuUW3jm8/B+Y4wRkfiOelcbqlytzeNIuOSTwMV0YapWdSUJr3Vs+56GZ4PL6eCpVsPUvUlfmjbbtr1v+BRoooruPmgo9qPpRQAUmOaX+dFACdK6n4bXJtfjJ4UudxHl6vav+UqmuXrV8MTfZfG+kXOf9XeRP8Ak4NTPWLRUXaSKmpyM2t3zbic3Mp/8faqvNS3J3X87/3pXP8A48aiqkJhzRRRQIKKPeigAooozQAUd6KM0AFTWspgv4Zs/ccN+RqHNGaLAKxJkZj3JNJRmjPvQAUUZ96M+9AB70UZ96KAP//Z">
+      <div style="min-width:0">
+        <h1>Celah Sempit</h1>
+        <p class="sub"><span class="rec">REC</span> · Tayang 29 Okt – 26 Nov 2026 · 20.00 WIB</p>
+      </div>
+    </div>
+    <div class="tabs" role="tablist" aria-label="Halaman" hidden>
+      <button type="button" role="tab" id="tab-cal" aria-controls="view-cal" aria-selected="true">Kalender</button>
+      <button type="button" role="tab" id="tab-audit" aria-controls="view-audit" aria-selected="false" tabindex="-1">Audit</button>
+    </div>
+  </div>
+</header>
+
+<section class="wrap gate" id="gate" hidden>
+  <form class="panel" id="gateForm">
+    <h2 id="gateTitle">Masuk admin</h2>
+    <p id="gateNote"></p>
+    <label class="flabel" id="codeWrap" hidden>Kode setup<input name="code" autocomplete="one-time-code"></label>
+    <label class="flabel">Username<input name="user" required autocomplete="username" autocapitalize="none" spellcheck="false"></label>
+    <label class="flabel">Password<input name="pass" type="password" required minlength="8" autocomplete="current-password"></label>
+    <p class="gate-err" id="gateErr" role="alert"></p>
+    <button type="submit" class="primary" id="gateSave">Lanjut</button>
+  </form>
+</section>
+
+<main class="wrap" hidden>
+  <section id="view-cal" role="tabpanel" aria-labelledby="tab-cal">
+    <div class="cal">
+      <aside class="side">
+        <div class="panel">
+          <div class="stat-row">
+            <div class="stat"><span class="eyebrow">Tayang</span><b><span id="pc">0</span><small>/<span id="pt">0</span></small></b><div class="bar"><i id="pb"></i></div></div>
+            <div class="stat"><span class="eyebrow">Dibuat</span><b><span id="rc">0</span><small>/<span id="rt">0</span></small></b><div class="bar r"><i id="rb"></i></div></div>
+            <div class="stat"><span class="eyebrow">Di-pin</span><b><span id="jc">0</span><small>/<span id="jt">0</span></small></b><div class="bar j"><i id="jb"></i></div></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="ph"><h3>Sudah tayang lebih dulu</h3></div>
+          <div class="aired" id="aired"></div>
+        </div>
+        <div class="panel">
+          <div class="eyebrow">Okt – Nov 2026</div>
+          <div class="month" id="month"></div>
+          <div class="legend">
+            <span><i style="background:var(--phos-bg);border:1px solid var(--phos)"></i>Sudah tayang</span>
+            <span><i style="border:1px solid var(--phos)"></i>Film jadi</span>
+            <span><i style="background:var(--prod-bg);border:1px solid var(--prod)"></i>Perlu dibuat</span>
+            <span><i style="border:2px solid var(--rec)"></i>Hari ini</span>
+            <span><i style="background:var(--rec);width:6px;height:6px;border-radius:50%"></i>Malam Jumat</span>
+          </div>
+        </div>
+        <details class="panel rules-d">
+          <summary>Aturan tayang</summary>
+          <dl class="rules">
+            <div><dt>Jam tayang</dt><dd>20.00 WIB, uji 2 minggu</dd></div>
+            <div><dt>Hashtag</dt><dd>IG/TikTok/YT 5 tag, FB 3 tag</dd></div>
+            <div><dt>Pin jawaban</dt><dd>H+1 dari akun Celah Sempit</dd></div>
+            <div><dt>Film baru</dt><dd>Selesai paling lambat H-2</dd></div>
+          </dl>
+        </details>
+      </aside>
+      <div class="feed">
+        <div class="seg" role="group" aria-label="Filter">
+          <button type="button" class="primary" id="jump">Ke hari ini</button>
+          <button type="button" data-f="all" aria-pressed="true">Semua</button>
+          <button type="button" data-f="todo" aria-pressed="false">Belum tayang</button>
+          <button type="button" data-f="prod" aria-pressed="false">Perlu dibuat</button>
+          <button type="button" data-f="pin" aria-pressed="false">Belum di-pin</button>
+          <button type="button" class="ghost" id="toggleAll">Buka semua</button>
+        </div>
+        <div id="list" class="feed"></div>
+        <div class="empty" id="listEmpty" hidden>Tidak ada kartu untuk filter ini.</div>
+        <footer>Centang dan metrik tersimpan di akun Google celah.sempit, jadi sama di HP dan laptop. Film jadi ada di D:\AI Video. Untuk film baru, cocokkan kunci jawaban dengan hasil render sebelum posting.</footer>
+      </div>
+    </div>
+  </section>
+
+  <section id="view-audit" role="tabpanel" aria-labelledby="tab-audit" hidden>
+    <div class="audit">
+      <div class="audit-top">
+        <div>
+          <h2>Audit konten</h2>
+          <p>Angka terbaru boleh terus diperbarui. Angka H+3 dan H+30 dikunci otomatis di hari itu dan tidak ikut tertimpa; tiap edit tersimpan di riwayat.</p>
+        </div>
+        <div class="audit-bar">
+          <div class="seg" role="group" aria-label="Rentang" id="ranges"></div>
+          <div class="seg" role="group" aria-label="Titik ukur" id="srcSeg"><button type="button" data-src="now" aria-pressed="true">Terbaru</button><button type="button" data-src="h3" aria-pressed="false">H+3</button><button type="button" data-src="h30" aria-pressed="false">H+30</button></div>
+          <div style="display:flex;gap:8px"><button type="button" class="sm" id="syncYt">Sinkron data</button><button type="button" class="sm" id="editFollowers">Follower akun</button><button type="button" class="sm ghost" id="logout" hidden>Keluar</button></div>
+        </div>
+      </div>
+      <div class="kpis" id="kpis"></div>
+      <div class="grid2">
+        <div class="panel">
+          <div class="ph"><h3>Views harian per platform</h3><div class="series-legend" id="seriesLegend"></div></div>
+          <div id="daily"></div>
+        </div>
+        <div class="panel">
+          <div class="ph"><h3>Per platform</h3><p>ER = (like + komen + share) ÷ views</p></div>
+          <div class="scroll" id="plat"></div>
+        </div>
+      </div>
+      <div class="grid2 even">
+        <div class="panel">
+          <div class="ph"><h3>Review mingguan</h3><p>Buat ulang pola yang menang</p></div>
+          <div id="review"></div>
+        </div>
+        <div class="panel">
+          <div class="ph"><h3>Rata-rata views per video</h3></div>
+          <div class="eyebrow" style="margin-bottom:8px">Gaya</div>
+          <div class="hbars" id="byStyle"></div>
+          <div class="eyebrow" style="margin:16px 0 8px">Mekanik</div>
+          <div class="hbars" id="byMech"></div>
+        </div>
+      </div>
+      <div class="grid2 even">
+        <div class="panel">
+          <div class="ph"><h3>Outlier 5X</h3><p>Views ≥ 5× follower akun di platform itu</p></div>
+          <div id="outliers"></div>
+        </div>
+        <div class="panel">
+          <div class="ph"><h3>Perlu diisi</h3><p>Metrik pertama, H+3, atau H+30</p></div>
+          <div id="pending"></div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="ph"><h3>Semua video tayang</h3><p>Views per platform</p></div>
+        <div class="scroll" id="table"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<dialog id="dlg" aria-labelledby="dlgTitle">
+  <form method="dialog" id="auditForm">
+    <div class="dh">
+      <div><h3 id="dlgTitle">Metrik</h3><p id="dlgSub"></p></div>
+      <button type="button" class="ghost sm" data-close aria-label="Tutup">✕</button>
+    </div>
+    <div id="dlgFields" style="display:grid;gap:10px"></div>
+    <label class="flabel" id="pubWrap" hidden>Tanggal tayang (supaya H+3 dan H+30 bisa dikunci)<input type="date" name="pub"></label>
+    <label class="flabel">Link YouTube (metrik YouTube terisi otomatis tiap pagi)<input type="url" name="yt" placeholder="https://youtube.com/shorts/…"></label>
+    <div class="fields" style="grid-template-columns:repeat(2,minmax(0,1fr))"><label>Link Reel Facebook<input type="url" name="fbl" placeholder="https://facebook.com/reel/…"></label><label>Link Reel Instagram<input type="url" name="igl" placeholder="https://instagram.com/reel/…"></label></div>
+    <label class="flabel">Catatan (hook, retensi, komentar menarik)<textarea name="note" maxlength="500"></textarea></label>
+    <details class="hist-d"><summary>Riwayat dan titik ukur</summary><div id="dlgHist"></div></details>
+    <div class="dfoot"><button type="button" data-close>Batal</button><button type="submit" class="primary" id="dlgSave">Simpan</button></div>
+  </form>
+</dialog>
+
+<dialog id="dlgF" aria-labelledby="dlgFTitle">
+  <form method="dialog" id="followForm">
+    <div class="dh">
+      <div><h3 id="dlgFTitle">Follower akun</h3><p>Dipakai untuk aturan 5X. Perbarui tiap Minggu.</p></div>
+      <button type="button" class="ghost sm" data-close aria-label="Tutup">✕</button>
+    </div>
+    <div class="fields" id="followFields" style="grid-template-columns:repeat(2,minmax(0,1fr))"></div>
+    <div class="dfoot"><button type="button" data-close>Batal</button><button type="submit" class="primary" id="followSave">Simpan</button></div>
+  </form>
+</dialog>
+
+<div class="tip" id="tip" hidden></div>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+const CORE = ["#celahsempit", "#hororindonesia", "#liminalspace"];
+const STYLE_TAG = { CCTV: "#cctvhoror", POV: "#foundfootage", Diorama: "#pixelart" };
+const DAYS = ["Min","Sen","Sel","Rab","Kam","Jum","Sab"];
+const MONTHS = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
+
+// Urutan tetap = urutan warna seri chart (--s1..--s4)
+const PLAT = [
+  { k: "ig", name: "Instagram", short: "IG", color: "var(--s1)" },
+  { k: "tt", name: "TikTok", short: "TT", color: "var(--s2)" },
+  { k: "fb", name: "Facebook", short: "FB", color: "var(--s3)" },
+  { k: "yt", name: "YouTube", short: "YT", color: "var(--s4)" }
+];
+const METR = [
+  { k: "v", name: "Views" }, { k: "l", name: "Like" }, { k: "c", name: "Komen" },
+  { k: "s", name: "Share" }, { k: "f", name: "Follow+" }
+];
+
+let state = {}, audit = {}, followers = {}, ytMap = {}, metaMap = {};
+let filter = "all", range = "all";
+
+function parseDate(s) { const [y, m, d] = s.split("-").map(Number); return new Date(y, m - 1, d); }
+function iso(d) { return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0"); }
+function fmt(d) { return DAYS[d.getDay()] + ", " + d.getDate() + " " + MONTHS[d.getMonth()]; }
+function addDays(d, n) { const x = new Date(d); x.setDate(x.getDate() + n); return x; }
+const todayIso = iso(new Date());
+
+function finish(v) {
+  const tags = CORE.concat(STYLE_TAG[v.style], v.topic);
+  const caption = v.cap + "\n" + (v.ans ? "Jawaban di-pin besok." : "Tulis jawabanmu di komentar.");
+  v.dateObj = parseDate(v.date);
+  v.tags = tags;
+  v.caption = caption;
+  v.ytTitle = v.yt + " #Shorts";
+  v.copies = {
+    ig: caption + "\n\n" + tags.join(" "),
+    fb: caption + "\n\n" + tags.slice(0, 3).join(" "),
+    yt: v.ytTitle,
+    ytDesc: caption + "\n\n#Shorts " + tags.join(" ")
+  };
+  return v;
+}
+
+// Data film datang dari server setelah login (Films.gs), bukan ditanam di halaman publik.
+let ITEMS = [], PRE = [], ALL = [], BY_ID = {};
+function loadFilms(f) {
+  ITEMS = f.ready.map(r => finish(Object.assign({ kind: "ready" }, r)))
+    .concat(f.prod.map(p => finish({
+      kind: "prod", id: "p" + p[0], num: p[0], date: p[1], style: p[2], mech: p[3], scene: p[4],
+      cap: p[5], yt: p[6], topic: p[7], ans: p[8], pin: p[9], prompt: f.prompts[p[0]]
+    })))
+    .sort((a, b) => a.date < b.date ? -1 : 1);
+  PRE = f.aired.map(a => Object.assign({ kind: "aired" }, a));
+  ALL = PRE.concat(ITEMS);           // semua video yang bisa diaudit
+  BY_ID = {}; ALL.forEach(v => { BY_ID[v.id] = v; });
+}
+
+const WEEKS = [
+  { name: "Minggu 1 · film jadi", from: "2026-10-29", to: "2026-11-06", note: "9 film siap tayang dari D:\\AI Video. Tidak perlu render." },
+  { name: "Minggu 2", from: "2026-11-07", to: "2026-11-13", note: "Film baru. Tiap film selesai paling lambat 2 hari sebelum tayang." },
+  { name: "Minggu 3", from: "2026-11-14", to: "2026-11-20", note: "Film baru." },
+  { name: "Minggu 4", from: "2026-11-21", to: "2026-11-26", note: "Film baru." }
+];
+
+function el(tag, attrs, ...kids) {
+  const n = document.createElement(tag);
+  for (const k in attrs || {}) {
+    if (k === "class") n.className = attrs[k];
+    else if (k === "text") n.textContent = attrs[k];
+    else if (k === "style") n.style.cssText = attrs[k];
+    else n.setAttribute(k, attrs[k]);
+  }
+  kids.forEach(c => c != null && c !== false && n.append(c));
+  return n;
+}
+
+let toastTimer;
+function toast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.hidden = false;
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 1800);
+}
+const errMsg = err => err && err.message ? err.message : String(err);
+
+// Apps Script menjalankan halaman di iframe; execCommand lebih andal di sana, clipboard API sebagai cadangan.
+function copyText(text, btn) {
+  const ta = document.createElement("textarea");
+  ta.value = text; ta.setAttribute("readonly", "");
+  ta.style.position = "fixed"; ta.style.top = "0"; ta.style.opacity = "0";
+  document.body.appendChild(ta);
+  ta.focus(); ta.select(); ta.setSelectionRange(0, text.length);
+  let ok = false;
+  try { ok = document.execCommand("copy"); } catch (e) {}
+  document.body.removeChild(ta);
+  const done = good => {
+    if (good) {
+      const label = btn.textContent;
+      btn.textContent = "Tersalin ✓"; btn.classList.add("ok");
+      setTimeout(() => { btn.textContent = label; btn.classList.remove("ok"); }, 1300);
+      toast("Tersalin");
+    } else toast("Gagal menyalin. Tahan teksnya lalu salin manual.");
+  };
+  if (ok) return done(true);
+  if (navigator.clipboard) navigator.clipboard.writeText(text).then(() => done(true), () => done(false));
+  else done(false);
+}
+
+/* ---------- Angka audit ---------- */
+const nf = new Intl.NumberFormat("id-ID", { notation: "compact", maximumFractionDigits: 1 });
+const nfFull = new Intl.NumberFormat("id-ID");
+const pct = x => isFinite(x) ? (x * 100).toLocaleString("id-ID", { maximumFractionDigits: 1 }) + "%" : "–";
+const dash = n => n == null ? "–" : nf.format(n);
+
+let src = "now";   // angka yang dipakai dashboard: "now" (terbaru) | "h3" | "h30"
+function entryM(id, w) {
+  const a = audit[id];
+  if (!a) return null;
+  return w === "now" ? a.m : a.snap && a.snap[w] ? a.snap[w].m : null;
+}
+function metric(id, p, m, w) {
+  const mm = entryM(id, w || src);
+  return mm && mm[p] && mm[p][m] != null ? mm[p][m] : null;
+}
+function total(id, m, p, w) { return (p ? [p] : PLAT.map(x => x.k)).reduce((t, k) => t + (metric(id, k, m, w) || 0), 0); }
+function hasAudit(id, w) { return PLAT.some(p => metric(id, p.k, "v", w) != null); }
+function er(id, p, w) { const v = total(id, "v", p, w); return v ? (total(id, "l", p, w) + total(id, "c", p, w) + total(id, "s", p, w)) / v : NaN; }
+function pubOf(v) { const a = audit[v.id]; return a && a.pub ? a.pub : v.date ? Date.parse(v.date + "T20:00:00+07:00") : null; }
+function ageOf(v) { const p = pubOf(v); return p ? (Date.now() - p) / 864e5 : null; }
+function isPosted(v) { return v.kind === "aired" || !!(state[v.id] || {}).p; }
+function name(v) { return v.title || v.scene; }
+function when(v) { return v.kind === "aired" ? "sebelum 29 Okt" : fmt(v.dateObj); }
+function rangeOf(v) { return v.kind === "aired" ? "pre" : String(WEEKS.findIndex(w => v.date >= w.from && v.date <= w.to)); }
+function inRange(v) { return range === "all" || rangeOf(v) === range; }
+
+/* ---------- Kalender ---------- */
+function saveCheck(v, key, value, input) {
+  state[v.id] = Object.assign({}, state[v.id], { [key]: value });
+  renderAll();
+  google.script.run
+    .withSuccessHandler(s => { state = s || state; renderAll(); })
+    .withFailureHandler(err => {
+      state[v.id][key] = !value; input.checked = !value;
+      renderAll();
+      toast("Gagal menyimpan: " + errMsg(err));
+    })
+    .setCheck(v.id, key, value);
+}
+
+function isVisible(v) {
+  const s = state[v.id] || {};
+  if (filter === "todo") return !s.p;
+  if (filter === "prod") return v.kind === "prod" && !s.r;
+  if (filter === "pin") return !!s.p && !s.j;
+  return true;
+}
+
+// Kartu terbuka diingat lintas render; awalnya hanya kartu hari ini / berikutnya yang terbuka.
+const openSet = new Set();
+let openInit = false;
+
+function card(v) {
+  const s = state[v.id] || {};
+  const d = v.dateObj;
+  const isToday = v.date === todayIso;
+  const art = el("details", { class: "day" + (isToday ? " today" : "") + (s.p ? " posted" : ""), id: "c-" + v.id });
+  art.open = openSet.has(v.id);
+  art.addEventListener("toggle", () => { if (art.open) openSet.add(v.id); else openSet.delete(v.id); syncToggleAll(); });
+
+  const badge = s.p ? el("span", { class: "badge on", text: s.j ? "✓ Tayang · di-pin" : "✓ Tayang · belum pin" })
+    : isToday ? el("span", { class: "badge live", text: "● Hari ini" })
+    : v.date < todayIso ? el("span", { class: "badge late", text: "Terlewat" })
+    : v.kind === "prod" && s.r ? el("span", { class: "badge on", text: "✓ Sudah dibuat" })
+    : el("span", { class: "badge", text: v.kind === "ready" ? "Film jadi" : "Perlu dibuat" });
+  const sub = [v.style, v.mech];
+  if (d.getDay() === 4) sub.push("malam Jumat");
+  art.append(el("summary", {},
+    el("span", { class: "sum-d", text: fmt(d) }),
+    el("span", { class: "sum-t" }, el("b", { text: v.kind === "ready" ? v.title : v.scene.toUpperCase() }), el("small", { text: sub.join(" · ") })),
+    badge));
+
+  const meta = el("div", { class: "meta" },
+    v.kind === "ready" ? el("span", { class: "chip ready", text: "Film jadi" }) : el("span", { class: "chip prod", text: "Perlu dibuat · #" + v.num }),
+    el("span", { class: "chip", text: "20.00 WIB" }));
+  if (d.getDay() === 4) meta.append(el("span", { class: "chip mj", text: "Malam Jumat" }));
+  if (d.getDay() === 0) meta.append(el("span", { class: "chip rv", text: "Review mingguan" }));
+
+  const info = v.kind === "ready"
+    ? el("div", { class: "file", text: "D:\\AI Video\\" + v.file + " · " + v.dur })
+    : el("div", { class: "deadline", text: "Selesai paling lambat " + fmt(addDays(d, -2)) });
+
+  const mk = (label, text, cls) => { const b = el("button", { type: "button", text: label, class: cls || "" }); b.onclick = () => copyText(text, b); return b; };
+
+  const cb = (key, text) => {
+    const id = "c" + key + "-" + v.id;
+    const input = el("input", { type: "checkbox", id });
+    input.checked = !!s[key];
+    input.onchange = () => saveCheck(v, key, input.checked, input);
+    return el("label", { for: id }, input, document.createTextNode(text));
+  };
+  const checks = el("div", { class: "checks" });
+  if (v.kind === "prod") checks.append(cb("r", "Sudah dibuat"));
+  checks.append(cb("p", "Sudah tayang"), cb("j", "Jawaban di-pin"));
+
+  const foot = el("div", { class: "foot" }, checks);
+  if (s.p || hasAudit(v.id, "now")) {
+    const btn = el("button", { type: "button", class: "sm", text: hasAudit(v.id, "now") ? "Ubah metrik" : "Isi metrik" });
+    btn.onclick = () => openAudit(v.id);
+    foot.append(el("div", { class: "audit-mini" },
+      hasAudit(v.id, "now") ? el("span", { class: "num", text: dash(total(v.id, "v", null, "now")) + " views · ER " + pct(er(v.id, null, "now")) }) : null,
+      btn));
+  }
+
+  const body = el("div", { class: "body" }, meta);
+  if (v.kind === "ready") body.append(el("div", { class: "title" }, el("i", { text: v.line })));
+  const pinText = (v.ans ? "Jawaban: " + v.ans : v.pin) + " Pin " + fmt(addDays(d, 1)) + ".";
+  body.append(info,
+    el("p", { class: "cap", text: v.caption }),
+    el("div", { class: "tags", text: v.tags.join(" ") }),
+    el("div", { class: "yt" }, el("b", { text: "YT" }), document.createTextNode(v.ytTitle)),
+    el("div", { class: "actions" }, mk("IG / TikTok", v.copies.ig), mk("Facebook", v.copies.fb), mk("Judul YT", v.copies.yt), mk("Deskripsi YT", v.copies.ytDesc)),
+    foot);
+  if (v.kind === "prod") {
+    body.append(el("details", {},
+      el("summary", { text: "Prompt video #" + v.num }),
+      el("pre", { class: "prompt", text: v.prompt }),
+      mk("Salin prompt", v.prompt, "sm")));
+  }
+  body.append(el("details", {}, el("summary", { text: v.ans ? "Kunci jawaban" : "Catatan pin" }), el("p", { text: pinText })));
+  art.append(body);
+  return art;
+}
+
+function syncToggleAll() {
+  const cards = [...document.querySelectorAll("#list .day")];
+  document.getElementById("toggleAll").textContent = cards.length && cards.every(c => c.open) ? "Tutup semua" : "Buka semua";
+}
+
+function renderMonth() {
+  const m = document.getElementById("month");
+  m.textContent = "";
+  ["Sen","Sel","Rab","Kam","Jum","Sab","Min"].forEach(d => m.append(el("div", { class: "dow", text: d })));
+  const first = ITEMS[0].dateObj, last = ITEMS[ITEMS.length - 1].dateObj;
+  const start = addDays(first, -((first.getDay() + 6) % 7));     // Senin sebelum hari pertama
+  const end = addDays(last, (7 - last.getDay()) % 7);             // Minggu setelah hari terakhir
+  for (let d = start; d <= end; d = addDays(d, 1)) {
+    const v = ITEMS.find(x => x.date === iso(d));
+    if (!v) { m.append(el("div", { class: "cell none", "aria-hidden": "true", text: String(d.getDate()) })); continue; }
+    const s = state[v.id] || {};
+    const status = s.p ? "sudah tayang" : v.kind === "ready" ? "film jadi, belum tayang" : s.r ? "sudah dibuat" : "perlu dibuat";
+    const b = el("button", {
+      type: "button",
+      class: "cell" + (s.p ? " posted" : v.kind === "ready" || s.r ? " ready" : " prod") + (v.date === todayIso ? " today" : "") + (d.getDay() === 4 ? " mj" : ""),
+      "aria-label": fmt(d) + ", " + name(v) + ", " + status,
+      title: name(v),
+      text: String(d.getDate())
+    });
+    if (hasAudit(v.id, "now")) b.append(el("span", { class: "dot" }));
+    b.onclick = () => jumpTo(v.id);
+    m.append(b);
+  }
+}
+
+function renderAired() {
+  const box = document.getElementById("aired");
+  box.textContent = "";
+  PRE.forEach(a => {
+    const btn = el("button", { type: "button", class: "sm", text: "Metrik", "aria-label": "Metrik " + a.title });
+    btn.onclick = () => openAudit(a.id);
+    box.append(el("div", { class: "aired-row" },
+      el("div", {}, el("b", { text: a.title }), el("small", { text: hasAudit(a.id, "now") ? "✓ tayang · " + dash(total(a.id, "v", null, "now")) + " views" : "✓ tayang" })),
+      btn));
+  });
+}
+
+function renderList() {
+  const list = document.getElementById("list");
+  list.textContent = "";
+  if (!openInit) { const next = ITEMS.find(x => x.date >= todayIso); if (next) openSet.add(next.id); openInit = true; }
+  WEEKS.forEach(w => {
+    const items = ITEMS.filter(v => v.date >= w.from && v.date <= w.to && isVisible(v));
+    if (!items.length) return;
+    const sec = el("section", { class: "batch" },
+      el("div", { class: "batch-head" }, el("h2", { text: w.name }), el("span", { text: fmt(parseDate(w.from)) + " – " + fmt(parseDate(w.to)) + " · " + w.note })));
+    items.forEach(v => sec.append(card(v)));
+    list.append(sec);
+  });
+  document.getElementById("listEmpty").hidden = list.children.length > 0;
+  syncToggleAll();
+}
+
+function updateStats() {
+  const posted = ALL.filter(isPosted).length;
+  const prods = ITEMS.filter(v => v.kind === "prod");
+  const made = prods.filter(v => (state[v.id] || {}).r).length;
+  const pinTotal = ITEMS.filter(v => (state[v.id] || {}).p);
+  const pinned = pinTotal.filter(v => state[v.id].j).length;
+  const set = (id, t) => { document.getElementById(id).textContent = t; };
+  set("pc", posted); set("pt", ALL.length);
+  set("rc", made); set("rt", prods.length);
+  set("jc", pinned); set("jt", pinTotal.length);
+  document.getElementById("pb").style.width = (posted / ALL.length * 100) + "%";
+  document.getElementById("rb").style.width = (prods.length ? made / prods.length * 100 : 0) + "%";
+  document.getElementById("jb").style.width = (pinTotal.length ? pinned / pinTotal.length * 100 : 0) + "%";
+}
+
+function jumpTo(id) {
+  showTab("cal");
+  openSet.add(id);
+  if (filter !== "all") document.querySelector('[data-f="all"]').click();
+  else renderList();
+  const node = document.getElementById("c-" + id);
+  if (node) node.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+}
+
+/* ---------- Audit dashboard ---------- */
+function scope() { return ALL.filter(v => inRange(v) && (isPosted(v) || hasAudit(v.id))); }
+
+function renderRanges() {
+  const box = document.getElementById("ranges");
+  box.textContent = "";
+  [["all", "Semua"], ["pre", "Sebelum 29 Okt"]].concat(WEEKS.map((w, k) => [String(k), "Mg " + (k + 1) + " · " + parseDate(w.from).getDate() + "–" + parseDate(w.to).getDate() + " " + MONTHS[parseDate(w.to).getMonth()]]))
+    .forEach(([val, label]) => {
+      const b = el("button", { type: "button", "aria-pressed": String(range === val), text: label });
+      b.onclick = () => { range = val; renderAudit(); };
+      box.append(b);
+    });
+}
+
+function kpi(label, value, sub) {
+  return el("div", { class: "kpi" }, el("span", { text: label }), el("b", { text: value }), sub ? el("span", { text: sub }) : null);
+}
+
+function renderKpis(rows, done) {
+  const views = done.reduce((t, v) => t + total(v.id, "v"), 0);
+  const inter = done.reduce((t, v) => t + total(v.id, "l") + total(v.id, "c") + total(v.id, "s"), 0);
+  const fol = done.reduce((t, v) => t + total(v.id, "f"), 0);
+  const box = document.getElementById("kpis");
+  box.textContent = "";
+  box.append(
+    kpi("Video tayang", String(rows.length), range === "all" ? "dari " + ALL.length + " video" : "di rentang ini"),
+    kpi("Sudah diaudit", done.length + "/" + rows.length, rows.length ? pct(done.length / rows.length) + " lengkap" : "–"),
+    kpi("Total views", done.length ? nf.format(views) : "–", "4 platform"),
+    kpi("Rata-rata / video", done.length ? nf.format(Math.round(views / done.length)) : "–", "views"),
+    kpi("Engagement rate", views ? pct(inter / views) : "–", "like + komen + share"),
+    kpi("Follower baru", done.length ? "+" + nfFull.format(fol) : "–", "dari video")
+  );
+}
+
+const tip = document.getElementById("tip");
+function showTip(target, body, ev) {
+  tip.textContent = ""; tip.append(body); tip.hidden = false;
+  const r = target.getBoundingClientRect();
+  const x = ev && ev.clientX != null ? ev.clientX : r.left + r.width / 2;
+  const y = ev && ev.clientY != null ? ev.clientY : r.top;
+  const w = tip.offsetWidth, h = tip.offsetHeight;
+  tip.style.left = Math.max(8, Math.min(innerWidth - w - 8, x - w / 2)) + "px";
+  tip.style.top = Math.max(8, y - h - 12) + "px";
+}
+function hideTip() { tip.hidden = true; }
+
+function renderDaily() {
+  const days = ALL.filter(inRange);
+  const max = Math.max(1, ...days.map(v => total(v.id, "v")));
+  const box = document.getElementById("daily");
+  box.textContent = "";
+  const chart = el("div", { class: "chart", role: "img", "aria-label": "Views per video per platform. Detail angka ada di tabel di bawah." });
+  [1, .5, 0].forEach(f => chart.append(el("div", { class: "grid", style: "top:" + (1 - f) * 100 + "%" }, el("span", { text: f ? nf.format(Math.round(max * f)) : "0" }))));
+  const cols = el("div", { class: "cols" });
+  days.forEach(v => {
+    const t = total(v.id, "v");
+    const col = el("div", { class: "col" + (hasAudit(v.id) ? "" : " na"), tabindex: "0", "aria-label": name(v) + ": " + (hasAudit(v.id) ? nfFull.format(t) + " views" : "belum ada data") });
+    PLAT.forEach(p => {
+      const n = metric(v.id, p.k, "v");
+      if (n) col.append(el("div", { class: "seg-v", style: "height:max(2px, calc(" + (n / max * 100) + "% - 2px));background:" + p.color }));
+    });
+    const tipBody = () => {
+      const f = document.createDocumentFragment();
+      f.append(el("b", { text: name(v) + " · " + when(v) }));
+      if (!hasAudit(v.id)) f.append(el("div", { text: isPosted(v) ? "Tayang, metrik belum diisi" : "Belum tayang" }));
+      else {
+        PLAT.forEach(p => f.append(el("div", { class: "row" }, el("span", {}, el("i", { style: "background:" + p.color }), document.createTextNode(p.name)), el("span", { text: dash(metric(v.id, p.k, "v")) }))));
+        f.append(el("div", { class: "row", style: "margin-top:4px;font-weight:600" }, el("span", { text: "Total" }), el("span", { text: nfFull.format(t) })));
+      }
+      return f;
+    };
+    col.addEventListener("pointermove", e => showTip(col, tipBody(), e));
+    col.addEventListener("pointerleave", hideTip);
+    col.addEventListener("focus", () => showTip(col, tipBody()));
+    col.addEventListener("blur", hideTip);
+    col.addEventListener("click", () => { if (isPosted(v) || hasAudit(v.id)) openAudit(v.id); });
+    cols.append(col);
+  });
+  chart.append(cols);
+  const x = el("div", { class: "xaxis", "aria-hidden": "true" });
+  days.forEach((v, k) => x.append(el("span", { text: v.kind === "aired" ? "•" : days.length <= 9 || k === days.length - 1 || v.dateObj.getDate() % 5 === 0 ? String(v.dateObj.getDate()) : "" })));
+  box.append(chart, x);
+
+  const lg = document.getElementById("seriesLegend");
+  lg.textContent = "";
+  PLAT.forEach(p => lg.append(el("span", {}, el("i", { style: "background:" + p.color }), document.createTextNode(p.short))));
+}
+
+function renderPlat(done) {
+  const tb = el("tbody");
+  PLAT.forEach(p => {
+    const sum = m => done.reduce((t, v) => t + total(v.id, m, p.k), 0);
+    const views = sum("v");
+    tb.append(el("tr", {},
+      el("td", {}, el("span", { class: "sw", style: "background:" + p.color }), document.createTextNode(p.name)),
+      el("td", { class: "r", text: done.length ? nf.format(views) : "–" }),
+      el("td", { class: "r", text: views ? pct((sum("l") + sum("c") + sum("s")) / views) : "–" }),
+      el("td", { class: "r", text: done.length ? "+" + nfFull.format(sum("f")) : "–" }),
+      el("td", { class: "r muted", text: followers[p.k] != null ? nf.format(followers[p.k]) : "–" })
+    ));
+  });
+  const box = document.getElementById("plat");
+  box.textContent = "";
+  box.append(el("table", {},
+    el("thead", {}, el("tr", {}, ...["Platform", "Views", "ER", "Follow+", "Akun"].map((h, k) => el("th", { class: k ? "r" : "", text: h })))),
+    tb));
+}
+
+function ritem(v) {
+  const b = el("button", { type: "button", class: "ghost sm", text: "Buka", "aria-label": "Buka " + name(v) });
+  b.onclick = () => v.kind === "aired" ? openAudit(v.id) : jumpTo(v.id);
+  return el("div", { class: "ritem" }, b,
+    el("div", { class: "t" }, el("b", { text: name(v) }), el("small", { text: v.style + " · " + v.mech + " · " + when(v) })),
+    el("div", { class: "v" }, document.createTextNode(nf.format(total(v.id, "v"))), el("small", { text: "ER " + pct(er(v.id)) })));
+}
+
+function renderReview(done) {
+  const box = document.getElementById("review");
+  box.textContent = "";
+  if (done.length < 2) {
+    box.append(el("div", { class: "empty", text: "Butuh minimal 2 video yang sudah diaudit di rentang ini." }));
+    return;
+  }
+  const sorted = done.slice().sort((a, b) => total(b.id, "v") - total(a.id, "v"));
+  const best = sorted.slice(0, 2);
+  const worst = sorted.slice(2).slice(-2).reverse();
+  const r = el("div", { class: "rank" }, el("h4", { class: "win", text: "▲ 2 terbaik" }), ...best.map(ritem));
+  if (worst.length) r.append(el("h4", { class: "lose", text: "▼ 2 terburuk" }), ...worst.map(ritem));
+  const pattern = [...new Set(best.map(v => v.style))].join(" + ") + " dengan mekanik " + [...new Set(best.map(v => v.mech))].join(" / ");
+  r.append(el("p", { class: "hint", style: "margin-top:4px", text: "Pola menang: " + pattern + "." }));
+  box.append(r);
+}
+
+function renderGroup(id, done, key) {
+  const groups = {};
+  done.forEach(v => { (groups[v[key]] = groups[v[key]] || []).push(total(v.id, "v")); });
+  const rows = Object.keys(groups).map(k => ({ k, avg: groups[k].reduce((a, b) => a + b, 0) / groups[k].length, n: groups[k].length }))
+    .sort((a, b) => b.avg - a.avg);
+  const max = Math.max(1, ...rows.map(r => r.avg));
+  const box = document.getElementById(id);
+  box.textContent = "";
+  if (!rows.length) { box.append(el("p", { class: "hint", text: "Belum ada data." })); return; }
+  rows.forEach(r => box.append(el("div", { class: "hbar" },
+    el("span", { class: "lab", text: r.k }),
+    el("span", { class: "track" }, el("i", { style: "width:" + (r.avg / max * 100) + "%" })),
+    el("span", { class: "val" }, document.createTextNode(nf.format(Math.round(r.avg)) + " "), el("small", { text: "· " + r.n + " video" })))));
+}
+
+function renderOutliers(done) {
+  const box = document.getElementById("outliers");
+  box.textContent = "";
+  if (!PLAT.some(p => followers[p.k] > 0)) {
+    const b = el("button", { type: "button", class: "sm", text: "Isi follower akun" });
+    b.onclick = openFollowers;
+    box.append(el("div", { class: "empty" }, el("p", { style: "margin:0 0 10px", text: "Isi jumlah follower tiap akun dulu." }), b));
+    return;
+  }
+  const hits = [];
+  done.forEach(v => PLAT.forEach(p => {
+    const n = metric(v.id, p.k, "v"), f = followers[p.k];
+    if (f > 0 && n != null && n >= 5 * f) hits.push({ v, p, n, x: n / f });
+  }));
+  hits.sort((a, b) => b.x - a.x);
+  if (!hits.length) { box.append(el("p", { class: "hint", text: "Belum ada video yang tembus 5× follower." })); return; }
+  const list = el("div", { class: "list" });
+  hits.forEach(h => list.append(el("div", { class: "li" },
+    el("span", {}, el("span", { class: "sw", style: "display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:8px;background:" + h.p.color }),
+      document.createTextNode(name(h.v) + " · " + h.p.short + " " + nf.format(h.n))),
+    el("span", { class: "x", text: h.x.toLocaleString("id-ID", { maximumFractionDigits: 1 }) + "×" }))));
+  box.append(list);
+}
+
+function renderPending() {
+  const box = document.getElementById("pending");
+  box.textContent = "";
+  const rows = [];
+  ALL.filter(v => inRange(v) && isPosted(v)).forEach(v => {
+    const snap = (audit[v.id] || {}).snap || {}, age = ageOf(v), need = [];
+    if (!hasAudit(v.id, "now")) need.push("metrik pertama");
+    if (age == null) need.push("tanggal tayang");
+    else if (age >= 3 && age < 30 && !snap.h3) need.push("H+3");
+    else if (age >= 30 && !snap.h30) need.push("H+30");
+    if (need.length) rows.push([v, need]);
+  });
+  if (!rows.length) { box.append(el("p", { class: "hint", text: "Semua titik ukur sudah terisi." })); return; }
+  const list = el("div", { class: "list" });
+  rows.forEach(([v, need]) => {
+    const b = el("button", { type: "button", class: "sm", text: "Isi" });
+    b.onclick = () => openAudit(v.id);
+    list.append(el("div", { class: "li" },
+      el("span", {}, document.createTextNode(name(v) + " · " + when(v) + " "), el("span", { class: "muted", text: "· perlu " + need.join(", ") + (ytMap[v.id] ? " (YouTube otomatis)" : "") })),
+      b));
+  });
+  box.append(list);
+}
+
+function renderTable(rows) {
+  const box = document.getElementById("table");
+  box.textContent = "";
+  if (!rows.length) { box.append(el("div", { class: "empty", text: "Belum ada video tayang di rentang ini." })); return; }
+  const tb = el("tbody");
+  rows.forEach(v => {
+    const b = el("button", { type: "button", class: "sm", text: hasAudit(v.id) ? "Ubah" : "Isi" });
+    b.onclick = () => openAudit(v.id);
+    const note = audit[v.id] && audit[v.id].note;
+    tb.append(el("tr", {},
+      el("td", {}, el("div", { text: name(v), style: "font-weight:600" }), el("div", { class: "muted", style: "font-size:12px", text: when(v) + " · " + v.style + " · " + v.mech + (note ? " · 📝" : ""), title: note || "" })),
+      ...PLAT.map(p => el("td", { class: "r", text: dash(metric(v.id, p.k, "v")) })),
+      el("td", { class: "r", style: "font-weight:600", text: hasAudit(v.id) ? nf.format(total(v.id, "v")) : "–" }),
+      el("td", { class: "r", text: pct(er(v.id)) }),
+      el("td", { class: "r muted", text: hasAudit(v.id, "h3") && total(v.id, "v", null, "h3") ? "×" + (total(v.id, "v", null, "now") / total(v.id, "v", null, "h3")).toLocaleString("id-ID", { maximumFractionDigits: 1 }) : "–" }),
+      el("td", { class: "r" }, b)));
+  });
+  box.append(el("table", {},
+    el("thead", {}, el("tr", {}, ...["Video", ...PLAT.map(p => p.short), "Total", "ER", "Kini vs H+3", ""].map((h, k) => el("th", { class: k ? "r" : "", text: h })))),
+    tb));
+}
+
+function renderAudit() {
+  renderRanges();
+  const rows = scope();
+  const done = rows.filter(v => hasAudit(v.id));
+  renderKpis(rows, done);
+  renderDaily();
+  renderPlat(done);
+  renderReview(done);
+  renderGroup("byStyle", done, "style");
+  renderGroup("byMech", done, "mech");
+  renderOutliers(done);
+  renderPending();
+  renderTable(rows);
+}
+
+/* ---------- Form metrik ---------- */
+const dlg = document.getElementById("dlg");
+let editing = null;
+function openAudit(id) {
+  editing = id;
+  const v = BY_ID[id];
+  document.getElementById("dlgTitle").textContent = name(v);
+  document.getElementById("dlgSub").textContent = when(v) + " · " + v.style + " · " + v.mech;
+  const box = document.getElementById("dlgFields");
+  box.textContent = "";
+  PLAT.forEach(p => {
+    const fields = el("div", { class: "fields" });
+    METR.forEach(m => {
+      const val = metric(id, p.k, m.k, "now");
+      const input = el("input", { type: "number", min: "0", step: "1", inputmode: "numeric", name: p.k + "-" + m.k, placeholder: "–" });
+      if (val != null) input.value = val;
+      fields.append(el("label", {}, document.createTextNode(m.name), input));
+    });
+    box.append(el("fieldset", {}, el("legend", {}, el("i", { style: "background:" + p.color }), document.createTextNode(p.name)), fields));
+  });
+  document.querySelector("#auditForm [name=note]").value = (audit[id] && audit[id].note) || "";
+  document.querySelector("#auditForm [name=yt]").value = ytMap[id] ? "https://youtube.com/shorts/" + ytMap[id] : "";
+  const mm = metaMap[id] || {};
+  document.querySelector("#auditForm [name=fbl]").value = mm.fb ? "https://www.facebook.com/reel/" + mm.fb : "";
+  document.querySelector("#auditForm [name=igl]").value = mm.igCode ? "https://www.instagram.com/reel/" + mm.igCode + "/" : mm.ig ? "(tersambung otomatis)" : "";
+  const a = audit[id] || {};
+  document.getElementById("pubWrap").hidden = v.kind !== "aired";
+  document.querySelector("#auditForm [name=pub]").value = a.pub ? new Date(a.pub + 7 * 36e5).toISOString().slice(0, 10) : "";
+  const sumV = m => PLAT.reduce((t, p) => t + ((m && m[p.k] && m[p.k].v) || 0), 0);
+  const at = t => new Date(t).toLocaleString("id-ID", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+  const row = (label, val) => el("div", { class: "li" }, el("span", { text: label }), el("span", { class: "x", text: val }));
+  const hist = document.getElementById("dlgHist");
+  hist.textContent = "";
+  hist.append(el("div", { class: "eyebrow", style: "margin-top:6px", text: "Titik ukur (terkunci)" }),
+    ...[["H+3", "h3"], ["H+30", "h30"]].map(([k, w]) => {
+      const sn = a.snap && a.snap[w];
+      return row(k + (sn ? " · " + at(sn.t) + " (hari ke-" + sn.d + ")" : " · belum"), sn ? nfFull.format(sumV(sn.m)) + " views" : "–");
+    }));
+  if (a.log && a.log.length) hist.append(el("div", { class: "eyebrow", style: "margin-top:10px", text: "Riwayat edit" }), ...a.log.slice().reverse().map(x => row(at(x.t), nfFull.format(sumV(x.m)) + " views")));
+  if (!pubOf(v)) hist.append(el("p", { class: "hint", text: "Isi tanggal tayang supaya H+3 dan H+30 bisa dikunci." }));
+  dlg.showModal();
+}
+
+document.getElementById("auditForm").addEventListener("submit", e => {
+  e.preventDefault();
+  const form = e.target, id = editing;
+  const metrics = {};
+  PLAT.forEach(p => { metrics[p.k] = {}; METR.forEach(m => { metrics[p.k][m.k] = form.elements[p.k + "-" + m.k].value; }); });
+  const save = document.getElementById("dlgSave");
+  save.disabled = true; save.textContent = "Menyimpan…";
+  const fail = err => { save.disabled = false; save.textContent = "Simpan"; toast("Gagal menyimpan: " + errMsg(err)); };
+  const ytUrl = form.elements.yt.value.trim();
+  const v = BY_ID[id];
+  const pub = v.kind === "aired" && form.elements.pub.value ? Date.parse(form.elements.pub.value + "T20:00:00+07:00") : pubOf(v);
+  const saveAudit = () => google.script.run
+    .withSuccessHandler(entry => {
+      audit[id] = entry; save.disabled = false; save.textContent = "Simpan";
+      dlg.close(); renderAll(); toast("Metrik " + name(BY_ID[id]) + " tersimpan");
+    })
+    .withFailureHandler(fail)
+    .setAudit(id, metrics, form.elements.note.value, pub);
+  // link disimpan dulu (kalau berubah), baru metrik
+  const mm = metaMap[id] || {};
+  const fbUrl = form.elements.fbl.value.trim(), igUrl = form.elements.igl.value.trim();
+  const fbOld = mm.fb ? "https://www.facebook.com/reel/" + mm.fb : "";
+  const igOld = mm.igCode ? "https://www.instagram.com/reel/" + mm.igCode + "/" : mm.ig ? "(tersambung otomatis)" : "";
+  const saveMeta = () => fbUrl === fbOld && igUrl === igOld ? saveAudit()
+    : google.script.run.withSuccessHandler(m => { metaMap = m || {}; saveAudit(); }).withFailureHandler(fail)
+        .setMetaLink(id, fbUrl, igUrl === "(tersambung otomatis)" ? "" : igUrl);
+  if (ytUrl === (ytMap[id] ? "https://youtube.com/shorts/" + ytMap[id] : "")) saveMeta();
+  else google.script.run.withSuccessHandler(m => { ytMap = m || {}; saveMeta(); }).withFailureHandler(fail).setYoutube(id, ytUrl);
+});
+
+const dlgF = document.getElementById("dlgF");
+function openFollowers() {
+  const box = document.getElementById("followFields");
+  box.textContent = "";
+  PLAT.forEach(p => {
+    const input = el("input", { type: "number", min: "0", step: "1", inputmode: "numeric", name: p.k, placeholder: "–" });
+    if (followers[p.k] != null) input.value = followers[p.k];
+    box.append(el("label", {}, document.createTextNode(p.name), input));
+  });
+  dlgF.showModal();
+}
+document.getElementById("editFollowers").onclick = openFollowers;
+document.querySelectorAll("[data-src]").forEach(btn => {
+  btn.onclick = () => {
+    src = btn.dataset.src;
+    document.querySelectorAll("[data-src]").forEach(b => b.setAttribute("aria-pressed", String(b === btn)));
+    renderAudit();
+  };
+});
+document.getElementById("toggleAll").onclick = () => {
+  const cards = [...document.querySelectorAll("#list .day")];
+  const openAll = !cards.every(c => c.open);
+  cards.forEach(c => { c.open = openAll; });
+};
+document.getElementById("syncYt").onclick = e => {
+  const btn = e.currentTarget, titles = {}, captions = {};
+  ITEMS.filter(isPosted).forEach(v => { titles[v.id] = v.yt; captions[v.id] = v.caption; });
+  btn.disabled = true; btn.textContent = "Menyinkron…";
+  const done = () => { btn.disabled = false; btn.textContent = "Sinkron data"; };
+  google.script.run
+    .withSuccessHandler(r => {
+      google.script.run.withSuccessHandler(d => {
+        audit = d.audit || {}; ytMap = d.yt || {}; metaMap = d.meta || {}; followers = d.followers || {}; renderAll(); done();
+        const part = (label, x) => label + " " + (x ? x.updated : 0) + (x && x.warn ? " (" + x.warn + ")" : "");
+        toast(part("YouTube", r.yt) + " · " + part("FB/IG", r.meta));
+      }).getAll();
+    })
+    .withFailureHandler(err => { done(); toast("Sinkron gagal: " + errMsg(err)); })
+    .syncAll(titles, captions);
+};
+document.getElementById("followForm").addEventListener("submit", e => {
+  e.preventDefault();
+  const f = {};
+  PLAT.forEach(p => { f[p.k] = e.target.elements[p.k].value; });
+  const save = document.getElementById("followSave");
+  save.disabled = true;
+  google.script.run
+    .withSuccessHandler(out => { followers = out || {}; save.disabled = false; dlgF.close(); renderAudit(); toast("Follower tersimpan"); })
+    .withFailureHandler(err => { save.disabled = false; toast("Gagal menyimpan: " + errMsg(err)); })
+    .setFollowers(f);
+});
+document.querySelectorAll("[data-close]").forEach(b => { b.onclick = () => b.closest("dialog").close(); });
+
+/* ---------- Tab & init ---------- */
+function showTab(tabName) {
+  ["cal", "audit"].forEach(t => {
+    const on = t === tabName;
+    const tab = document.getElementById("tab-" + t);
+    tab.setAttribute("aria-selected", String(on));
+    tab.tabIndex = on ? 0 : -1;
+    document.getElementById("view-" + t).hidden = !on;
+  });
+  hideTip();
+  try { localStorage.setItem("cs-tab", tabName); } catch (e) {}
+}
+document.getElementById("tab-cal").onclick = () => showTab("cal");
+document.getElementById("tab-audit").onclick = () => showTab("audit");
+document.querySelector(".tabs").addEventListener("keydown", e => {
+  if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+  const next = document.getElementById("tab-cal").getAttribute("aria-selected") === "true" ? "audit" : "cal";
+  showTab(next); document.getElementById("tab-" + next).focus();
+});
+
+document.querySelectorAll("[data-f]").forEach(btn => {
+  btn.onclick = () => {
+    filter = btn.dataset.f;
+    document.querySelectorAll("[data-f]").forEach(b => b.setAttribute("aria-pressed", b === btn ? "true" : "false"));
+    renderList();
+  };
+});
+
+document.getElementById("jump").onclick = () => {
+  const v = ITEMS.find(x => x.date >= todayIso) || ITEMS[ITEMS.length - 1];
+  jumpTo(v.id);
+};
+
+function renderAll() { renderMonth(); renderAired(); renderList(); updateStats(); renderAudit(); }
+
+try { if (localStorage.getItem("cs-tab") === "audit") showTab("audit"); } catch (e) {}
+
+/* ---------- API + login ---------- */
+// URL /exec web app Apps Script (Execute as: Me, Who has access: Anyone). Semua fungsi dicek token di server.
+const API = "https://script.google.com/macros/s/AKfycbzGuTB3d8ZVv-gnwtjxx3AkY8QKEowLtHgwJ22KLm9XWVPttiPS2iVDUVUlFy-6T1qr/exec";
+let token = null;
+try { token = localStorage.getItem("cs-token"); } catch (e) {}
+
+// text/plain supaya tidak ada preflight CORS; Apps Script hanya menerima permintaan "simple".
+function api(fn, ...args) {
+  return fetch(API, { method: "POST", body: JSON.stringify({ fn, args, token }) })
+    .then(r => r.json())
+    .then(j => {
+      if (j.auth) { showGate(j.auth); throw new Error("Sesi berakhir, silakan masuk lagi."); }
+      if (j.error) throw new Error(j.error);
+      return j.data;
+    });
+}
+// Pengganti google.script.run, supaya pemanggil lama tidak berubah.
+const google = { script: { get run() {
+  let ok = () => {}, ko = err => toast(errMsg(err));
+  const r = new Proxy({}, { get: (_, k) =>
+    k === "withSuccessHandler" ? f => (ok = f, r) :
+    k === "withFailureHandler" ? f => (ko = f, r) :
+    (...a) => { api(k, ...a).then(ok, ko); } });
+  return r;
+} } };
+
+const gate = document.getElementById("gate"), gateForm = document.getElementById("gateForm");
+function showGate(mode) {
+  token = null;
+  try { localStorage.removeItem("cs-token"); } catch (e) {}
+  document.querySelector("main").hidden = true;
+  document.querySelector(".tabs").hidden = true;
+  document.getElementById("logout").hidden = true;
+  gate.hidden = false;
+  const setup = mode === "setup";
+  document.getElementById("gateTitle").textContent = setup ? "Buat akun admin" : "Masuk admin";
+  document.getElementById("gateNote").textContent = setup
+    ? "Belum ada admin. Isi kode setup dari editor Apps Script (jalankan setupAdmin), lalu pilih username dan password."
+    : "Hanya admin Celah Sempit yang bisa membuka kalender ini.";
+  document.getElementById("codeWrap").hidden = !setup;
+  gateForm.elements.code.required = setup;
+  gateForm.elements.pass.autocomplete = setup ? "new-password" : "current-password";
+  gateForm.dataset.mode = mode;
+}
+function boot() {
+  return api("getAll").then(d => {
+    loadFilms(d.films);
+    state = d.state || {}; audit = d.audit || {}; followers = d.followers || {}; ytMap = d.yt || {}; metaMap = d.meta || {};
+    gate.hidden = true;
+    document.querySelector("main").hidden = false;
+    document.querySelector(".tabs").hidden = false;
+    document.getElementById("logout").hidden = false;
+    renderAll();
+  });
+}
+gateForm.addEventListener("submit", e => {
+  e.preventDefault();
+  const f = gateForm.elements, btn = document.getElementById("gateSave");
+  btn.disabled = true;
+  const setup = gateForm.dataset.mode === "setup";
+  (setup ? api("authSetup", f.code.value.trim(), f.user.value.trim(), f.pass.value) : api("authLogin", f.user.value.trim(), f.pass.value))
+    .then(t => {
+      token = t;
+      try { localStorage.setItem("cs-token", t); } catch (e) {}
+      f.pass.value = ""; f.code.value = "";
+      return boot();
+    })
+    .catch(err => { document.getElementById("gateErr").textContent = errMsg(err); })
+    .finally(() => { btn.disabled = false; });
+});
+document.getElementById("logout").onclick = () => { api("authLogout").catch(() => {}); showGate("login"); };
+
+if (token) boot().catch(err => toast("Gagal memuat data: " + errMsg(err)));
+else api("authStatus").then(showGate, err => toast("Server tidak bisa dihubungi: " + errMsg(err)));
+</script>
+</body>
+</html>
