@@ -416,7 +416,7 @@ textarea { font-family: var(--f-body); resize: vertical; min-height: 72px; }
       </div>
       <div class="grid2 even">
         <div class="panel">
-          <div class="ph"><h3>Outlier 5X</h3><p>Views ≥ 5× follower akun di platform itu</p></div>
+          <div class="ph"><h3>Outlier 2× median</h3><p>Views ≥ 2× median video lain di platform itu</p></div>
           <div id="outliers"></div>
         </div>
         <div class="panel">
@@ -451,7 +451,7 @@ textarea { font-family: var(--f-body); resize: vertical; min-height: 72px; }
 <dialog id="dlgF" aria-labelledby="dlgFTitle">
   <form method="dialog" id="followForm">
     <div class="dh">
-      <div><h3 id="dlgFTitle">Follower akun</h3><p>Dipakai untuk aturan 5X. Perbarui tiap Minggu.</p></div>
+      <div><h3 id="dlgFTitle">Follower akun</h3><p>Perbarui tiap Minggu.</p></div>
       <button type="button" class="ghost sm" data-close aria-label="Tutup">✕</button>
     </div>
     <div class="fields" id="followFields" style="grid-template-columns:repeat(2,minmax(0,1fr))"></div>
@@ -927,19 +927,19 @@ function renderGroup(id, done, key) {
 function renderOutliers(done) {
   const box = document.getElementById("outliers");
   box.textContent = "";
-  if (!PLAT.some(p => followers[p.k] > 0)) {
-    const b = el("button", { type: "button", class: "sm", text: "Isi follower akun" });
-    b.onclick = openFollowers;
-    box.append(el("div", { class: "empty" }, el("p", { style: "margin:0 0 10px", text: "Isi jumlah follower tiap akun dulu." }), b));
-    return;
-  }
+  // Follower masih terlalu kecil untuk aturan 5X, jadi ukurannya median views per platform (minimal 3 video).
   const hits = [];
-  done.forEach(v => PLAT.forEach(p => {
-    const n = metric(v.id, p.k, "v"), f = followers[p.k];
-    if (f > 0 && n != null && n >= 5 * f) hits.push({ v, p, n, x: n / f });
-  }));
+  PLAT.forEach(p => {
+    const vs = done.map(v => metric(v.id, p.k, "v")).filter(n => n > 0).sort((a, b) => a - b);
+    if (vs.length < 3) return;
+    const mid = vs.length >> 1, med = vs.length % 2 ? vs[mid] : (vs[mid - 1] + vs[mid]) / 2;
+    done.forEach(v => {
+      const n = metric(v.id, p.k, "v");
+      if (n != null && n >= 2 * med) hits.push({ v, p, n, x: n / med });
+    });
+  });
   hits.sort((a, b) => b.x - a.x);
-  if (!hits.length) { box.append(el("p", { class: "hint", text: "Belum ada video yang tembus 5× follower." })); return; }
+  if (!hits.length) { box.append(el("p", { class: "hint", text: "Belum ada video yang tembus 2× median platformnya." })); return; }
   const list = el("div", { class: "list" });
   hits.forEach(h => list.append(el("div", { class: "li" },
     el("span", {}, el("span", { class: "sw", style: "display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:8px;background:" + h.p.color }),
@@ -986,11 +986,12 @@ function renderTable(rows) {
       ...PLAT.map(p => el("td", { class: "r", text: dash(metric(v.id, p.k, "v")) })),
       el("td", { class: "r", style: "font-weight:600", text: hasAudit(v.id) ? nf.format(total(v.id, "v")) : "–" }),
       el("td", { class: "r", text: pct(er(v.id)) }),
+      el("td", { class: "r", text: audit[v.id] && audit[v.id].ytRet != null ? Math.round(audit[v.id].ytRet) + "%" : "–" }),
       el("td", { class: "r muted", text: hasAudit(v.id, "h3") && total(v.id, "v", null, "h3") ? "×" + (total(v.id, "v", null, "now") / total(v.id, "v", null, "h3")).toLocaleString("id-ID", { maximumFractionDigits: 1 }) : "–" }),
       el("td", { class: "r" }, b)));
   });
   box.append(el("table", {},
-    el("thead", {}, el("tr", {}, ...["Video", ...PLAT.map(p => p.short), "Total", "ER", "Kini vs H+3", ""].map((h, k) => el("th", { class: k ? "r" : "", text: h })))),
+    el("thead", {}, el("tr", {}, ...["Video", ...PLAT.map(p => p.short), "Total", "ER", "Tonton YT", "Kini vs H+3", ""].map((h, k) => el("th", { class: k ? "r" : "", text: h })))),
     tb));
 }
 
