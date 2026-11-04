@@ -218,6 +218,9 @@ footer { color: var(--muted); font-size: 13px; }
 .hbar .track i { display: block; height: 100%; min-width: 2px; background: var(--s1); border-radius: 0 4px 4px 0; }
 .hbar .val { font: 12px/1 var(--f-mono); color: var(--ink); white-space: nowrap; }
 .hbar .val small { color: var(--muted); }
+.hbar .track.split { display: flex; gap: 2px; }
+.hbar .track.split i { border-radius: 0; }
+.hbar .track.split i + i { background: var(--line-2); border-radius: 0 4px 4px 0; }
 
 .scroll { overflow-x: auto; margin: 0 -16px; padding: 0 16px; }
 table { width: 100%; border-collapse: collapse; font-size: 13px; }
@@ -421,6 +424,11 @@ textarea { font-family: var(--f-body); resize: vertical; min-height: 72px; }
           <div class="hbars" id="byMech"></div>
         </div>
       </div>
+      <div class="panel">
+        <div class="ph"><h3>Stayed vs swiped away</h3><p id="stayAvg">YouTube Shorts, isi dari YouTube Studio (Shown in feed)</p></div>
+        <div class="series-legend" style="margin-bottom:10px"><span><i style="background:var(--s1)"></i>Stayed to watch</span><span><i style="background:var(--line-2)"></i>Swiped away</span></div>
+        <div class="hbars" id="stay"></div>
+      </div>
       <div class="grid2 even">
         <div class="panel">
           <div class="ph"><h3>Outlier 2× median</h3><p>Views ≥ 2× median video lain di platform itu</p></div>
@@ -448,6 +456,7 @@ textarea { font-family: var(--f-body); resize: vertical; min-height: 72px; }
     <div id="dlgFields" style="display:grid;gap:10px"></div>
     <label class="flabel" id="pubWrap" hidden>Tanggal tayang (supaya H+3 dan H+30 bisa dikunci)<input type="date" name="pub"></label>
     <label class="flabel">Link YouTube (metrik YouTube terisi otomatis tiap pagi)<input type="url" name="yt" placeholder="https://youtube.com/shorts/…"></label>
+    <label class="flabel">Stayed to watch YouTube % (Studio → Analitik video → Shown in feed; swiped away = 100 − ini)<input type="number" name="stay" min="0" max="100" step="0.1" inputmode="decimal" placeholder="–"></label>
     <div class="fields" style="grid-template-columns:repeat(2,minmax(0,1fr))"><label>Link Reel Facebook<input type="url" name="fbl" placeholder="https://facebook.com/reel/…"></label><label>Link Reel Instagram<input type="url" name="igl" placeholder="https://instagram.com/reel/…"></label></div>
     <label class="flabel">Catatan (hook, retensi, komentar menarik)<textarea name="note" maxlength="500"></textarea></label>
     <details class="hist-d"><summary>Riwayat dan titik ukur</summary><div id="dlgHist"></div></details>
@@ -931,6 +940,24 @@ function renderGroup(id, done, key) {
     el("span", { class: "val" }, document.createTextNode(nf.format(Math.round(r.avg)) + " "), el("small", { text: "· " + r.n + " video" })))));
 }
 
+function renderStay(rows) {
+  const box = document.getElementById("stay");
+  box.textContent = "";
+  const list = rows.filter(v => audit[v.id] && audit[v.id].stay != null).sort((a, b) => audit[b.id].stay - audit[a.id].stay);
+  const avg = list.reduce((t, v) => t + audit[v.id].stay, 0) / list.length;
+  document.getElementById("stayAvg").textContent = list.length
+    ? "YouTube Shorts · rata-rata stayed " + Math.round(avg) + "% · swiped " + Math.round(100 - avg) + "%"
+    : "YouTube Shorts, isi dari YouTube Studio (Shown in feed)";
+  if (!list.length) { box.append(el("p", { class: "hint", text: "Belum ada data. Isi \"Stayed to watch\" di form metrik video." })); return; }
+  list.forEach(v => {
+    const st = audit[v.id].stay;
+    box.append(el("div", { class: "hbar", role: "img", "aria-label": name(v) + ": stayed " + st + "%, swiped away " + Math.round((100 - st) * 10) / 10 + "%" },
+      el("span", { class: "lab", text: name(v) }),
+      el("span", { class: "track split" }, el("i", { style: "width:" + st + "%" }), el("i", { style: "flex:1" })),
+      el("span", { class: "val" }, document.createTextNode(Math.round(st) + "% "), el("small", { text: "· " + Math.round(100 - st) + "%" }))));
+  });
+}
+
 function renderOutliers(done) {
   const box = document.getElementById("outliers");
   box.textContent = "";
@@ -1012,6 +1039,7 @@ function renderAudit() {
   renderReview(done);
   renderGroup("byStyle", done, "style");
   renderGroup("byMech", done, "mech");
+  renderStay(rows);
   renderOutliers(done);
   renderPending();
   renderTable(rows);
@@ -1038,6 +1066,7 @@ function openAudit(id) {
     box.append(el("fieldset", {}, el("legend", {}, el("i", { style: "background:" + p.color }), document.createTextNode(p.name)), fields));
   });
   document.querySelector("#auditForm [name=note]").value = (audit[id] && audit[id].note) || "";
+  document.querySelector("#auditForm [name=stay]").value = audit[id] && audit[id].stay != null ? audit[id].stay : "";
   document.querySelector("#auditForm [name=yt]").value = ytMap[id] ? "https://youtube.com/shorts/" + ytMap[id] : "";
   const mm = metaMap[id] || {};
   document.querySelector("#auditForm [name=fbl]").value = mm.fb ? "https://www.facebook.com/reel/" + mm.fb : "";
@@ -1077,7 +1106,7 @@ document.getElementById("auditForm").addEventListener("submit", e => {
       dlg.close(); renderAll(); toast("Metrik " + name(BY_ID[id]) + " tersimpan");
     })
     .withFailureHandler(fail)
-    .setAudit(id, metrics, form.elements.note.value, pub);
+    .setAudit(id, metrics, form.elements.note.value, pub, form.elements.stay.value);
   // link disimpan dulu (kalau berubah), baru metrik
   const mm = metaMap[id] || {};
   const fbUrl = form.elements.fbl.value.trim(), igUrl = form.elements.igl.value.trim();
